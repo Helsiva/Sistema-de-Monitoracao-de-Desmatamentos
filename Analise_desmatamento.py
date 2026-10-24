@@ -168,7 +168,7 @@ class AppDesmatamento(ctk.CTk):
             )
             messagebox.showerror(
                 "Falha na análise",
-                f"A análise não foi concluída.\\n\\n{erro}\\n\\n"
+                f"A análise não foi concluída.\n\n{erro}\n\n"
                 "Confira também os detalhes no terminal.",
             )
         finally:
