@@ -9,6 +9,7 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 from tkinter import messagebox
+import traceback
 from filtro_ruido import (
     PIXELS_MINIMOS, OBSERVACOES_MINIMAS,
     mascarar_nuvens_scl, pixels_com_observacoes_suficientes,
@@ -155,8 +156,26 @@ class AppDesmatamento(ctk.CTk):
             return None
         return None
 
-    # Recolhendo dados informados e validando informações
+    # Relata exceções de rede e Earth Engine também dentro da interface.
     def processar_analise(self):
+        self.btn_analisar.configure(state="disabled")
+        try:
+            self.executar_analise()
+        except Exception as erro:
+            traceback.print_exc()
+            self.label_status.configure(
+                text=f"Erro na análise: {erro}", text_color="red"
+            )
+            messagebox.showerror(
+                "Falha na análise",
+                f"A análise não foi concluída.\\n\\n{erro}\\n\\n"
+                "Confira também os detalhes no terminal.",
+            )
+        finally:
+            self.btn_analisar.configure(state="normal")
+
+    # Recolhendo dados informados e validando informações
+    def executar_analise(self):
         self.btn_abrir_mapa.configure(state="disabled")
         local_texto = self.entry_local.get().strip()
         try:
