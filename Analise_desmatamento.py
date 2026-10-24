@@ -7,6 +7,8 @@ import webbrowser
 import math
 import os
 from dotenv import load_dotenv
+from pathlib import Path
+from tkinter import messagebox
 from filtro_ruido import (
     PIXELS_MINIMOS, OBSERVACOES_MINIMAS,
     mascarar_nuvens_scl, pixels_com_observacoes_suficientes,
@@ -112,9 +114,21 @@ class AppDesmatamento(ctk.CTk):
             hover_color="#457b9d",
             state="disabled"
         )
-        self.btn_abrir_mapa.pack(fill="x", padx=15, pady=(10, 10))
+        self.btn_abrir_mapa.pack(fill="x", padx=15, pady=(10, 4))
+        self.label_dica_mapa = ctk.CTkLabel(
+            self.frame_menu,
+            text="As máscaras amarela (original) e vermelha (filtrada) aparecem no navegador, não no painel lateral.",
+            font=ctk.CTkFont(size=11),
+            wraplength=350,
+        )
+        self.label_dica_mapa.pack(fill="x", padx=15, pady=(0, 6))
 
-        self.label_status = ctk.CTkLabel(self.frame_menu, text="Status: Aguardando dados", font=ctk.CTkFont(size=11))
+        self.label_status = ctk.CTkLabel(
+            self.frame_menu,
+            text="Informe local, raio e datas; depois clique em Analisar.",
+            font=ctk.CTkFont(size=11),
+            wraplength=350,
+        )
         self.label_status.pack(padx=10, pady=5)
 
         # Painel do mapa
@@ -128,7 +142,7 @@ class AppDesmatamento(ctk.CTk):
         self.mapa_widget.set_zoom(12)
         self.mapa_widget.set_tile_server("https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}", max_zoom=22)
 
-        self.mapa_html_path = "mapa_desmatamento.html"
+        self.mapa_html_path = Path(__file__).resolve().with_name("mapa_desmatamento.html")
 
     # Convertendo a cidade para coordenadas
     def obter_coordenadas(self, nome_local):
@@ -310,11 +324,36 @@ class AppDesmatamento(ctk.CTk):
         self.mapa_widget.set_marker(lat, lon, text=f"{local_texto}\nRaio: {raio_km}km | Desmatado (filtrado): {area_ha:.2f} ha")
 
         self.btn_abrir_mapa.configure(state="normal")
-        self.label_status.configure(text=f"Concluído: original × filtrada ({PIXELS_MINIMOS} px).", text_color="#2ba84a")
+        self.label_status.configure(
+            text=f"Concluído! Abrindo mapa original × filtrado ({PIXELS_MINIMOS} pixels) no navegador...",
+            text_color="#2ba84a"
+        )
+        self.update_idletasks()
+        self.abrir_mapa_html()
 
-    #Abre o mapa no navegador
+    # Abre o mapa de resultados no navegador (arquivo local).
     def abrir_mapa_html(self):
-        webbrowser.open(self.mapa_html_path)
+        try:
+            caminho = Path(self.mapa_html_path).resolve()
+            if not caminho.is_file():
+                raise FileNotFoundError(f"Mapa ainda não foi gerado: {caminho}")
+            # webbrowser.open exige uma URL; caminhos relativos podem não funcionar.
+            abriu = webbrowser.open(caminho.as_uri(), new=2)
+            if not abriu:
+                self.label_status.configure(
+                    text="Mapa gerado, mas o navegador não abriu automaticamente.",
+                    text_color="yellow",
+                )
+                messagebox.showinfo(
+                    "Mapa salvo",
+                    f"O mapa foi salvo em:\n{caminho}\n\nAbra este arquivo no navegador.",
+                )
+        except Exception as erro:
+            self.label_status.configure(
+                text="Não foi possível abrir o mapa automaticamente.",
+                text_color="red"
+            )
+            messagebox.showerror("Falha ao abrir mapa", str(erro))
 
 
 if __name__ == "__main__":
