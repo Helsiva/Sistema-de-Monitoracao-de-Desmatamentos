@@ -20,7 +20,11 @@ Esta etapa realiza as operações no próprio Google Earth Engine; **OpenCV não
 3. Crie um arquivo `.env` com `GEE_PROJECT_ID=seu-id-do-projeto`; o arquivo real não deve ser versionado.
 4. Execute `python Analise_desmatamento.py`.
 5. Selecione local, raio, ano inicial e final, depois clique em **Analisar Desmatamento**.
-6. Clique em **Ver mapa de desmatamento no Navegador**; use o controle de camadas para alternar entre original e filtrada.
+6. Após a análise terminar, o mapa HTML é aberto **automaticamente** no navegador. Caso precise, use **Ver mapa de desmatamento no Navegador** para reabri-lo.
+7. Se o navegador não abrir, localize o arquivo `mapa_desmatamento.html` na mesma pasta do script e abra-o manualmente. O aplicativo informa o caminho.
+8. Se ocorrer uma exceção durante o processamento, o aplicativo abre uma janela com a mensagem de erro e registra detalhes no terminal.
+
+**Observação:** o mapa da interface Tkinter mostra somente o fundo de satélite, o perímetro e um marcador. As máscaras original e filtrada são exibidas no **mapa Folium do navegador**.
 
 ## Testes offline
 
